@@ -1,0 +1,21 @@
+# - Locate SQLite library
+# Defines:
+#
+#  SQLITE_FOUND
+#  SQLITE_INCLUDE_DIR
+#  SQLITE_INCLUDE_DIRS (not cached)
+#  SQLITE_LIBRARIES
+#  SQLITE_LIBRARY_DIRS (not cached)
+
+find_path(SQLITE_INCLUDE_DIR sqlite3.h)
+find_library(SQLITE_LIBRARIES NAMES sqlite3)
+
+set(SQLITE_INCLUDE_DIRS ${SQLITE_INCLUDE_DIR})
+get_filename_component(SQLITE_LIBRARY_DIRS ${SQLITE_LIBRARIES} PATH)
+
+# handle the QUIETLY and REQUIRED arguments and set SQLITE_FOUND to TRUE if
+# all listed variables are TRUE
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(SQLite DEFAULT_MSG SQLITE_INCLUDE_DIR SQLITE_LIBRARIES)
+
+mark_as_advanced(SQLITE_FOUND SQLITE_INCLUDE_DIR SQLITE_LIBRARIES)
