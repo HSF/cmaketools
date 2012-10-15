@@ -1,0 +1,413 @@
+commit d07fef35ba55fda98eb3ac1b774b9449c88d57a8
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Oct 11 17:47:31 2012 +0200
+
+    added icc to the known compilers and fixed duplicated function
+
+commit d4750afc41a7190b82e02c2c39fdf4f2b4790e58
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Oct 11 09:39:39 2012 +0200
+
+    pick up the lcg compilers from the path instead of fixing a location
+
+commit d3be1ce831f02dd5fb83a14541156507721186ae
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Oct 10 19:41:54 2012 +0200
+
+    added platform ids to the manifest.xml
+
+commit c38643bb0d00c5a1964e0ac6fd0877b3ceb16f1f
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Mon Oct 1 15:47:37 2012 +0200
+
+    renamed a few Find*.cmake modules
+
+commit 27e58a9d90ad4e8fe700c85ebdb223a6ac60267c
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Sun Sep 23 00:48:12 2012 +0200
+
+    added NeuroBayesExpert
+
+commit e3ed9315572f2f9f9da8f64e87b2e3c4cbfeb190
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Sep 19 07:05:40 2012 +0000
+
+    minor fixes in compiler flags
+    
+    From: Marco Clemencic <marco.clemencic@cern.ch>
+    
+    
+    git-svn-id: svn+ssh://svn.cern.ch/reps/gaudi/Gaudi/trunk@7028 53ecefc3-a64d-0410-9bdf-b8581fa3287e
+
+commit 44b340080b673148e0e543ab54469df0dea8c7dc
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Sep 18 15:00:12 2012 +0200
+
+    Improved info messages about the platform.
+
+commit 960e79fb6842857143bcea1d556c12c6175cef91
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Sep 18 14:44:46 2012 +0200
+
+    Fixed compiler lookup when cross-compiling on exotic platforms.
+
+commit 4814c1be3db38f2cea645f5903cdb85f456164bd
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Sep 18 12:03:37 2012 +0200
+
+    Further improvements to the toolchain.
+    
+    Now it allows to keep the system BINARY_TAG and use the LCG binaries
+    build for ${LCG_SYSTEM}-opt (or -dbg).
+
+commit 1421b59b1ac3ff64b5c7e1e1be5f54de26623437
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Mon Sep 17 18:10:46 2012 +0200
+
+    improved toolchain for cross compilation
+
+commit c48b55183d33959fc6570ad52c59f2a6283caf40
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Sep 12 17:11:53 2012 +0200
+
+    Added toolchain for LCGCMT 64a.
+
+commit b143ea60a6c26d650b68246695a73a9ed7916259
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Sep 5 18:13:12 2012 +0200
+
+    Fixes for the runtime environment (for LHCb).
+
+commit 6e72719ac45959f1f095f18121672efe8762e2df
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Sep 4 11:45:03 2012 +0200
+
+    Do not cache LCG search path in CMake
+
+commit 01a5fb9b2b3cc041e3d2cf1e7bcc43f035ccc221
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Sep 4 11:44:01 2012 +0200
+
+    Fixed LFC lookup with CMake
+
+commit 4298ccd546919403b8ccb7db056594674af1cde1
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Aug 22 12:00:54 2012 +0200
+
+    Fixed search path for CASTOR.
+
+commit 7ca7d98b34bd80c3fc9810688ac56d19e4cc50fa
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Aug 22 12:00:28 2012 +0200
+
+    Added FindXrootd.cmake and FindCASTOR.cmake.
+
+commit cd29a3b5d2c43e9f72647828ac96fe27f130599c
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Aug 22 11:02:32 2012 +0200
+
+    Improvements to FindRELAX.cmake.
+    
+    Modified to set the variable RELAX_ROOTMAPS to contain the rootmap files
+    corresponding to the components required.
+
+commit 09d58fd72c613448b632890d04ac8b11346295fe
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Aug 21 01:15:51 2012 +0200
+
+    Added functions to process files with pyrcc and pyuic.
+    
+    The functions gen_pyqt_resource and gen_pyqt_uic convert, respectively,
+    .rc and .ui files in importable Python module for PtQt applications.
+
+commit c9edb46ffe5c21b6e336fe214a6d6554f1d4c519
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Aug 21 01:13:50 2012 +0200
+
+    Fixed the 'native_version's depending on Python.
+
+commit 4dbb9778289d18e35844167f7f774520ace9833d
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Aug 9 09:59:44 2012 +0200
+
+    enhanced FindRELAX.cmake and removed FindPOOL.cmake
+
+commit 8b78b3879cbedae341d0534a1d6a5d6b4cb6e5dd
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Aug 8 21:02:22 2012 +0200
+
+    fixed Qt search path
+
+commit 98bb97605a460b56df3f2e6d6e8c81277e804fbc
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Aug 8 09:44:27 2012 +0200
+
+    improvements to few Find*.cmake modules
+
+commit ffbef0648fe72056bd34307940ea7e296361c2f0
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Aug 7 17:16:49 2012 +0000
+
+    added a couple of Find*.cmake modules (pygraphics and lfc)
+    
+    From: Marco Clemencic <marco.clemencic@cern.ch>
+    
+    
+    git-svn-id: svn+ssh://svn.cern.ch/reps/gaudi/Gaudi/trunk@6987 53ecefc3-a64d-0410-9bdf-b8581fa3287e
+
+commit 383df0527291139fabc098385778f3a5a4567f89
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Jul 20 17:53:44 2012 +0200
+
+    Modified FindROOT.cmake to find deps between components on Mac
+    
+    The difference between Linux and MacOSX builds require that we
+    add to the link statement more ROOT components that the ones
+    strictly needed.
+    With this patch, FindROOT.cmake detects automatically the required
+    dependencies and adds them.
+
+commit cdca1339fd1c07818e131ebfb8aa1dbf5dac6563
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Jul 11 08:17:03 2012 +0200
+
+    hacks to compile on MacOSX
+
+commit bd9d860aea733d8fcc56132554c4ee1c3b27087c
+Author: Pere Mato <pere.mato@cern.ch>
+Date:   Fri Jul 20 10:44:34 2012 +0000
+
+    Added ENV variables to FindXXX modules
+    
+    From: Pere Mato <pere.mato@cern.ch>
+    
+    
+    git-svn-id: svn+ssh://svn.cern.ch/reps/gaudi/Gaudi/trunk@6968 53ecefc3-a64d-0410-9bdf-b8581fa3287e
+
+commit ad02e14ccc2b7709b838726fe22a4963b8bd361b
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Jul 12 16:56:42 2012 +0000
+
+    improved lookup for LCGCMT in heptools-common.cmake
+    
+    Now it can understand the 'preview' version, to be able to use
+    the nightlies.
+    
+    From: Marco Clemencic <marco.clemencic@cern.ch>
+    
+    
+    git-svn-id: svn+ssh://svn.cern.ch/reps/gaudi/Gaudi/trunk@6962 53ecefc3-a64d-0410-9bdf-b8581fa3287e
+
+commit 34aed5e8d164ac03adf85b26f65f671c485b8dcb
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Jun 19 16:41:16 2012 +0000
+
+    Added toolchain heptools-64.cmake
+    
+    From: Marco Clemencic <marco.clemencic@cern.ch>
+    
+    
+    git-svn-id: svn+ssh://svn.cern.ch/reps/gaudi/Gaudi/trunk@6919 53ecefc3-a64d-0410-9bdf-b8581fa3287e
+
+commit ec6a0ea3e2b0045a560447b0c740e33eb14b2d78
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Jun 19 16:41:13 2012 +0000
+
+    Modified CMake toolchains to work with "heptools" (LCG) >= 63
+    
+    Starting from LCGCMT 63, the Application Area projects are deployed in
+    the directory 'app/releases' both on AFS and on local installations
+    (e.g. CVMFS), while before they were in 'externals' for local
+    installations.
+    
+    From: Marco Clemencic <marco.clemencic@cern.ch>
+    
+    
+    git-svn-id: svn+ssh://svn.cern.ch/reps/gaudi/Gaudi/trunk@6918 53ecefc3-a64d-0410-9bdf-b8581fa3287e
+
+commit ed98409540388565ac3b778f8366f3144a6ba9a1
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Jun 14 15:05:32 2012 +0000
+
+    Disable (again) uuid on SLC6
+    
+    From: Marco Clemencic <marco.clemencic@cern.ch>
+    
+    
+    git-svn-id: svn+ssh://svn.cern.ch/reps/gaudi/Gaudi/trunk@6917 53ecefc3-a64d-0410-9bdf-b8581fa3287e
+
+commit acd4a4a88ca2f2fcbacb57090193a303ee243a46
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Mon Jun 11 17:45:39 2012 +0000
+
+    Preparing for LCG 63
+    
+    From: Marco Clemencic <marco.clemencic@cern.ch>
+    
+    
+    git-svn-id: svn+ssh://svn.cern.ch/reps/gaudi/Gaudi/trunk@6914 53ecefc3-a64d-0410-9bdf-b8581fa3287e
+
+commit fdc77617e7df601847d20b3d719bacd08dee2d23
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Jun 8 18:04:24 2012 +0200
+
+    Added support for coverage builds.
+
+commit c4f8794bedb9e9bbc270df9c12b221424b3cd295
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Jun 8 12:15:36 2012 +0200
+
+    Allow GCCXML global compile flags (GCCXML_CXX_FLAGS)
+
+commit 0a4e7ee2b4c8ac3e2ade1fd8f96ff11e279929bb
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Jun 8 11:29:04 2012 +0200
+
+    Preliminary heptools-63.cmake (based on nightly builds)
+
+commit e60cbcb7969d42a8f79cefd063a37ac13a461ca2
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Jun 8 11:27:31 2012 +0200
+
+    Added support for Clang, gccmax and gcc 4.7
+
+commit 2ce89622692a547d2963f4ec0c69f8b1a7152d92
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Jun 8 11:23:18 2012 +0200
+
+    Allow override of GCCXML compiler (via GCCXML_CXX_COMPILER)
+
+commit d251fc0a4e2d301ade22ae477362bac63be6f06e
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu May 3 12:37:13 2012 +0200
+
+    made CMake compile flags closer to the CMT ones
+
+commit 044b1ac2f3762c916c4395e18fb4a5ebc3866d35
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Apr 27 17:54:07 2012 +0200
+
+    avoid that Boost libraries are picked up from the system
+
+commit 2d2a59034b736c1d204361722ab7ede9a1e359b1
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Apr 26 15:44:32 2012 +0200
+
+    added consistency check on the toolchain version of used projects
+
+commit 0962f47f8ce397cc4ce0a4f4848883f57a8e111f
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Apr 26 14:01:37 2012 +0200
+
+    propagate custom (external) and project env to user projects
+
+commit 4522803552b20dcc4c9941f6b0cf0a804063b8c0
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Mar 30 11:46:48 2012 +0200
+
+    updated make_heptools.py and added heptools-62b.cmake
+
+commit 6b5f2567cf8f9db3078aabd69f226dc8d3dd62d7
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Mar 27 22:28:39 2012 +0200
+
+    modified Findtcmalloc.cmake to propagate the library path
+    
+    The tcmalloc package is special, because we do not link against the
+    library, but we need the LD_LIBRARY_PATH set to find it anyway.
+
+commit 17c8a90135091e55cf4d72171e54a90664efd094
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Mon Mar 19 12:37:03 2012 +0100
+
+    Modified FindROOT.cmake to support COMPONENTS and build dictionaries
+    
+    Removed the build of the dictionaries from GaudiContrib and added
+    functions to in GaudiProjectConfig to extend the dictionary builds.
+
+commit 1b221cfa01b794c33b1e3e174b0a0fd4e56e236d
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Mar 13 20:15:07 2012 +0100
+
+    Fixed a copy-paste error in Findsqlite.cmake
+
+commit f6a0fa5c107e97f4de4371748ec700df91a213d3
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Sun Mar 11 12:40:55 2012 +0100
+
+    initial support for COMPONENTS options in FindROOT.cmake
+
+commit 272485280cc63c5d3ed4ba19275c1f69d2d99473
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Feb 23 12:32:50 2012 +0100
+
+    Fixed compilation of GaudiProfiling after patch #4852
+    
+    https://savannah.cern.ch/patch/?4852
+
+commit 9f3cb56916b9b42faf8dca550d9e6b45124169c9
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Feb 16 16:36:58 2012 +0100
+
+    Renamed FindQMtest.cmake into FindQMTest.cmake
+
+commit aec1a9fe86538cb09f9fe3d565f79942a087f4b2
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Feb 16 16:34:22 2012 +0100
+
+    improved FindQMtest.cmake to find the 'qm' module on the system path
+
+commit 58dee36089c6275e7b5482328c676bf1a25ba587
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Thu Feb 16 15:37:20 2012 +0100
+
+    Set the mimimum required version of CMake to 2.8.5
+    
+    The local copy of FindPython*.cmake files have been removed because the
+    version in 2.8.5 is good enough.
+
+commit a4f3c8e3612a07a56f8805578244621dd1c77f74
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Wed Feb 15 14:05:07 2012 +0100
+
+    fixed an external for heptools-62a and slc6
+
+commit acf2fa7dc2a7884b5d0f74ed7a68861fb4f40e01
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Feb 14 17:43:23 2012 +0100
+
+    added toolchain for LCG 62a
+
+commit ec51df219f784422eee435dd0ffbf0af5f924031
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Feb 14 17:42:44 2012 +0100
+
+    fixed make_heptools.py to use the tag 'target-slc', if present
+
+commit 57d4c8ff2cd00df6727ea1f3882f4a7a1dc2babd
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Feb 14 15:21:10 2012 +0100
+
+    added a small script to generate the heptools toolchain from LCGCMT
+    
+    To be noted that the script is a development version: it doesn't take
+    into account special cases and tags, so the output is not directly
+    usable.
+
+commit c3c0422a298b7153121d0c29f7f962b4c178179b
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Fri Dec 16 18:18:40 2011 +0100
+
+    fixed to compile the head version with CMake
+
+commit 2993fce9ef1e1af83ffdd4f50be8d8dd118786a0
+Author: Marco Clemencic <marco.clemencic@cern.ch>
+Date:   Tue Feb 14 12:38:00 2012 +0100
+
+    update cmake lcg toolchain (from CORAL, lcg 61b)
+    
+    with the new configuration style, the Find*.cmake modules
+    are independent from the toolchain and the version of the
+    toolchain has to be specified on the command line:
+    
+    cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain/heptools-61b.cmake .
