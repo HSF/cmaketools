@@ -12,6 +12,7 @@
 find_path(TCMALLOC_INCLUDE_DIR google/tcmalloc.h)
 foreach(component tcmalloc profiler)
   find_library(TCMALLOC_${component}_LIBRARY NAMES ${component})
+  mark_as_advanced(TCMALLOC_${component}_LIBRARY)
 endforeach()
 
 set(TCMALLOC_INCLUDE_DIRS ${TCMALLOC_INCLUDE_DIR})
