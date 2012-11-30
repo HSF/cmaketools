@@ -2,12 +2,24 @@
 # Components:
 #   Core Cint Reflex RIO Hist Tree TreePlayer Cintex Matrix GenVector MathCore MathMore XMLIO
 
+
+if(ROOT_OVERRIDE_PATH)
+  if(NOT ROOTSYS AND NOT ENV{ROOTSYS})
+    message(FATAL_ERROR "You must specify ROOTSYS in conjunction with ROOT_OVERRIDE_PATH.")
+  endif()
+  #message(STATUS "Overriding CMAKE_PREFIX_PATH looking for ROOT")
+  set(ROOT_OVERRIDE_PATH NO_CMAKE_PATH)
+endif()
+
 # Find ROOTSYS
 #  We assume TROOT.h is in $ROOTSYS/include
-find_path(ROOT_INCLUDE_DIR TROOT.h
-          HINTS $ENV{ROOTSYS}/include)
-get_filename_component(ROOTSYS ${ROOT_INCLUDE_DIR} PATH)
-set(ROOTSYS ${ROOTSYS} CACHE PATH "Location of the installation of ROOT")
+if(NOT ROOT_INCLUDE_DIR)
+  find_path(ROOT_INCLUDE_DIR TROOT.h
+            HINTS ${ROOTSYS}/include $ENV{ROOTSYS}/include
+            ${ROOT_OVERRIDE_PATH})
+  get_filename_component(ROOTSYS ${ROOT_INCLUDE_DIR} PATH)
+  set(ROOTSYS ${ROOTSYS} CACHE PATH "Location of the installation of ROOT" FORCE)
+endif()
 
 set(ROOT_INCLUDE_DIRS ${ROOTSYS}/include)
 set(ROOT_LIBRARY_DIRS ${ROOTSYS}/lib)
@@ -53,7 +65,8 @@ while(ROOT_FIND_COMPONENTS)
   # look for the library if not found yet
   if(NOT ROOT_${component}_LIBRARY)
     find_library(ROOT_${component}_LIBRARY NAMES ${component}
-                 PATHS ${ROOT_LIBRARY_DIRS})
+                 HINTS ${ROOT_LIBRARY_DIRS}
+                 ${ROOT_OVERRIDE_PATH})
     if(ROOT_${component}_LIBRARY)
       mark_as_advanced(ROOT_${component}_LIBRARY)
       set(_found_components ${_found_components} ${component})
@@ -76,7 +89,9 @@ endwhile()
 # Locate the tools
 foreach(component ${ROOT_ALL_TOOLS})
   if(NOT ROOT_${component}_CMD)
-    find_program(ROOT_${component}_CMD ${component} HINT ${ROOTSYS}/bin)
+    find_program(ROOT_${component}_CMD ${component}
+                 HINTS ${ROOTSYS}/bin
+                 ${ROOT_OVERRIDE_PATH})
     if(ROOT_${component}_CMD)
       mark_as_advanced(ROOT_${component}_CMD)
       set(_found_tools ${_found_tools} ${component})
@@ -88,7 +103,7 @@ endforeach()
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(ROOT DEFAULT_MSG ROOTSYS ROOT_INCLUDE_DIR)
-mark_as_advanced(ROOT_FOUND ROOT_INCLUDE_DIR)
+mark_as_advanced(ROOT_FOUND ROOTSYS ROOT_INCLUDE_DIR)
 
 ######################################################################
 # Report findings
@@ -157,7 +172,12 @@ macro(reflex_generate_dictionary dictionary _headerfile _selectionfile)
   else()
     set(GCCXML_CXX_COMPILER cl CACHE STRING "Compiler that GCCXML must use.")
   endif()
+  mark_as_advanced(GCCXML_CXX_COMPILER)
   set(gccxmlopts "--gccxml-compiler ${GCCXML_CXX_COMPILER}")
+
+  if(GCCXML_CXX_FLAGS)
+    set(gccxmlopts "${gccxmlopts} --gccxml-cxxflags ${GCCXML_CXX_FLAGS}")
+  endif()
 
   set(rootmapname ${dictionary}Dict.rootmap)
   set(rootmapopts --rootmap=${rootmapname})
@@ -181,12 +201,13 @@ macro(reflex_generate_dictionary dictionary _headerfile _selectionfile)
   if(gccxmlopts)
     set(gccxmlopts "--gccxmlopt=${gccxmlopts}")
   endif()
+
   get_filename_component(GCCXML_home ${GCCXML} PATH)
   add_custom_command(
     OUTPUT ${gensrcdict} ${rootmapname}
     COMMAND ${ROOT_genreflex_CMD}
-    ARGS ${headerfiles} -o ${gensrcdict} ${gccxmlopts} ${rootmapopts} --select=${selectionfile}
-         --gccxmlpath=${GCCXML_home} ${ARG_OPTIONS} ${include_dirs} ${definitions} ${GCCXML_CXX_FLAGS}
+         ${headerfiles} -o ${gensrcdict} ${gccxmlopts} ${rootmapopts} --select=${selectionfile}
+         --gccxmlpath=${GCCXML_home} ${ARG_OPTIONS} ${include_dirs} ${definitions}
     DEPENDS ${headerfiles} ${selectionfile})
 
   # Creating this target at ALL level enables the possibility to generate dictionaries (genreflex step)

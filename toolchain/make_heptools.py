@@ -36,6 +36,7 @@ LCG_prepare_paths()"""
                         "Qt":  "qt",
                         "CASTOR":  "castor",
                         "lfc": "Grid/LFC",
+                        "TBB":  "tbb",
                         }
 
     __special_names__ = {"qt": "Qt"}
@@ -135,9 +136,9 @@ LCG_prepare_paths()"""
         # @FIXME: to be made cleaner and more flexible
         for compiler in [("gcc43", "gcc", "4.3.5"),
                          ("gcc46", "gcc", "4.6.2"),
-                         ("gcc47", "gcc", "4.7.0"),
+                         ("gcc47", "gcc", "4.7.2"),
                          ("clang30", "clang", "3.0"),
-                         ("gccmax", "gcc", "4.7.0")]:
+                         ("gccmax", "gcc", "4.7.2")]:
             yield "LCG_compiler(%s %s %s)" % compiler
 
         yield "\n# Externals"

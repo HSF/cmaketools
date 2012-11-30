@@ -54,10 +54,14 @@ function(lcg_find_host_os)
       if(issue MATCHES Ubuntu)
         set(os ubuntu)
         string(REGEX REPLACE ".*Ubuntu ([0-9]+)[.]([0-9]+).*" "\\1.\\2" osvers "${issue}")
-      elseif(issue MATCHES SLC)
-        set(os slc)
-        string(REGEX REPLACE ".*release ([0-9]+)[.].*" "\\1" osvers "${issue}")
+      elseif(issue MATCHES SLC|Fedora) # RedHat-like distributions
+        string(TOLOWER "${CMAKE_MATCH_0}" os)
+        if(os STREQUAL fedora)
+          set(os fc) # we use an abbreviation for Fedora
+        endif()
+        string(REGEX REPLACE ".*release ([0-9]+)[. ].*" "\\1" osvers "${issue}")
       else()
+        message(WARNING "Unkown OS, assuming 'linux'")
         set(os linux)
         set(osvers)
       endif()
@@ -72,25 +76,39 @@ endfunction()
 # Get system compiler.
 function(lcg_find_host_compiler)
   if(NOT LCG_HOST_COMP OR NOT LCG_HOST_COMPVERS)
-    if(WIN32)
-      find_program(guessed_compiler cl gcc)
-    else()
-      find_program(guessed_compiler gcc icc)
-    endif()
-    mark_as_advanced(guessed_compiler)
-    if(guessed_compiler MATCHES /cl)
+    find_program(LCG_HOST_C_COMPILER   NAMES gcc cc cl clang icc bcc xlc
+                 DOC "Host C compiler")
+    find_program(LCG_HOST_CXX_COMPILER NAMES c++ g++ cl clang++ icpc CC aCC bcc xlC
+                 DOC "Host C++ compiler")
+    mark_as_advanced(LCG_HOST_C_COMPILER LCG_HOST_CXX_COMPILER)
+    if(LCG_HOST_C_COMPILER MATCHES /cl)
       set(compiler vc)
-      execute_process(COMMAND ${guessed_compiler} ERROR_VARIABLE versioninfo OUTPUT_VARIABLE out)
+      execute_process(COMMAND ${LCG_HOST_C_COMPILER} ERROR_VARIABLE versioninfo OUTPUT_VARIABLE out)
       string(REGEX REPLACE ".*Version ([0-9]+)[.].*" "\\1" cvers "${versioninfo}")
       math(EXPR cvers "${cvers} - 6")
-    elseif(guessed_compiler MATCHES /gcc)
+    elseif(LCG_HOST_C_COMPILER MATCHES /gcc)
       set(compiler gcc)
-      execute_process(COMMAND ${guessed_compiler} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
+      execute_process(COMMAND ${LCG_HOST_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
       string(REGEX MATCHALL "[0-9]+" GCC_VERSION_COMPONENTS ${GCC_VERSION})
       list(GET GCC_VERSION_COMPONENTS 0 GCC_MAJOR)
       list(GET GCC_VERSION_COMPONENTS 1 GCC_MINOR)
       set(cvers ${GCC_MAJOR}${GCC_MINOR})
+    elseif(LCG_HOST_C_COMPILER MATCHES /icc)
+      set(compiler icc)
+      execute_process(COMMAND ${LCG_HOST_C_COMPILER} -dumpversion OUTPUT_VARIABLE ICC_VERSION)
+      string(REGEX MATCHALL "[0-9]+" ICC_VERSION_COMPONENTS ${ICC_VERSION})
+      list(GET ICC_VERSION_COMPONENTS 0 ICC_MAJOR)
+      list(GET ICC_VERSION_COMPONENTS 1 ICC_MINOR)
+      set(cvers ${ICC_MAJOR})
+    elseif(LCG_HOST_C_COMPILER MATCHES /clang)
+      set(compiler clang)
+      execute_process(COMMAND ${LCG_HOST_C_COMPILER} --version OUTPUT_VARIABLE CLANG_VERSION)
+      string(REGEX MATCHALL "[0-9]+" CLANG_VERSION_COMPONENTS ${CLANG_VERSION})
+      list(GET CLANG_VERSION_COMPONENTS 0 CLANG_MAJOR)
+      list(GET CLANG_VERSION_COMPONENTS 1 CLANG_MINOR)
+      set(cvers ${CLANG_MAJOR}${CLANG_MINOR})
     else()
+      message(WARNING "Unknown host C compiler ${LCG_HOST_C_COMPILER}")
       set(compiler)
       set(cvers)
     endif()
@@ -169,11 +187,17 @@ function(lcg_get_target_platform)
     set(type Debug)
   elseif(LCG_BUILD_TYPE STREQUAL "cov")
     set(type Coverage)
+  elseif(LCG_BUILD_TYPE STREQUAL "pro")
+    set(type Profile)
+#  elseif(LCG_BUILD_TYPE STREQUAL "o2g")
+#    set(type RelWithDebInfo)
+#  elseif(LCG_BUILD_TYPE STREQUAL "min")
+#    set(type MinSizeRel)
   else()
     message(FATAL_ERROR "LCG build type ${type} not supported.")
   endif()
   set(CMAKE_BUILD_TYPE ${type} CACHE STRING
-      "Choose the type of build, options are: None Debug Release Coverage Profile RelWithDebInfo MinSizeRel.")
+      "Choose the type of build, options are: empty, Debug, Release, Coverage, Profile, RelWithDebInfo, MinSizeRel.")
 
   # architecture
   set(CMAKE_SYSTEM_PROCESSOR ${LCG_ARCH} PARENT_SCOPE)
@@ -183,10 +207,11 @@ function(lcg_get_target_platform)
     set(CMAKE_SYSTEM_NAME Windows PARENT_SCOPE)
   elseif(LCG_OS STREQUAL "mac")
     set(CMAKE_SYSTEM_NAME Darwin PARENT_SCOPE)
-  elseif(LCG_OS STREQUAL "slc" OR LCG_OS STREQUAL "ubuntu")
+  elseif(LCG_OS STREQUAL "slc" OR LCG_OS STREQUAL "ubuntu" OR LCG_OS STREQUAL "fc" OR LCG_OS STREQUAL "linux")
     set(CMAKE_SYSTEM_NAME Linux PARENT_SCOPE)
   else()
-    message(FATAL_ERROR "OS ${LCG_OS} is not supported.")
+    set(CMAKE_SYSTEM_NAME ${CMAKE_HOST_SYSTEM_NAME})
+    message(WARNING "OS ${LCG_OS} is not a known platform, assuming it's a ${CMAKE_SYSTEM_NAME}.")
   endif()
 
   # set default platform ids
@@ -262,12 +287,22 @@ macro(LCG_AA_project name version)
     # ROOT is special
     set(ROOT_home ${ROOT_home}/root)
   endif()
+  if(NOT LCG_platform STREQUAL LCG_system)
+    # For AA projects we want to be able to fall back on non-debug builds.
+    if(NOT ${name} STREQUAL ROOT)
+      set(${name}_home ${${name}_home} ${${name}_base}/${LCG_system})
+    else()
+      # ROOT is special
+      set(ROOT_home ${ROOT_home} ${ROOT_base}/${LCG_system}/root)
+    endif()
+  endif()
   list(APPEND LCG_projects ${name})
 endmacro()
 
 # Define variables and location of the compiler.
 macro(LCG_compiler id flavor version)
-  if(${id} STREQUAL ${LCG_COMP}${LCG_COMPVERS})
+  #message(STATUS "LCG_compiler(${ARGV})")
+  if(${id} STREQUAL ${LCG_COMP}${LCG_COMPVERS} AND NOT LCG_USE_NATIVE_COMPILER)
     if(${flavor} STREQUAL "gcc")
       set(compiler_root ${LCG_external}/${flavor}/${version}/${LCG_HOST_ARCH}-${LCG_HOST_OS}${LCG_HOST_OSVERS})
       set(c_compiler_names lcg-gcc-${version})
@@ -284,15 +319,16 @@ macro(LCG_compiler id flavor version)
     else()
       message(FATAL_ERROR "Uknown compiler flavor ${flavor}.")
     endif()
-    #message(STATUS "LCG_compiler($ARGV) -> ${c_compiler_name} ${cxx_compiler_name} ${compiler_root}")
-    # We need to unset the default compiler names to make find_program() work.
+    #message(STATUS "LCG_compiler(${ARGV}) -> '${c_compiler_names}' '${cxx_compiler_names}' ${compiler_root}")
     find_program(CMAKE_C_COMPILER
                  NAMES ${c_compiler_names}
-                 PATHS ${compiler_root}/bin)
+                 PATHS ${compiler_root}/bin
+		 DOC "C compiler")
     find_program(CMAKE_CXX_COMPILER
                  NAMES ${cxx_compiler_names}
-                 PATHS ${compiler_root}/bin)
-    #message(STATUS "LCG_compiler($ARGV) -> ${CMAKE_C_COMPILER} ${CMAKE_CXX_COMPILER}")
+                 PATHS ${compiler_root}/bin
+		 DOC "C++ compiler")
+    #message(STATUS "LCG_compiler(${ARGV}) -> ${CMAKE_C_COMPILER} ${CMAKE_CXX_COMPILER}")
   endif()
 endmacro()
 
@@ -325,6 +361,9 @@ macro(LCG_prepare_paths)
   string(REGEX MATCH "[0-9]+\\.[0-9]+" Boost_config_version_twodigit ${Boost_config_version})
   set(Boost_ADDITIONAL_VERSIONS ${Boost_config_version} ${Boost_config_version_twodigit})
 
+  # Useful for RedHat-derived platforms
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS TRUE)
+
   #===============================================================================
   # Special cases that require a special treatment
   #===============================================================================
@@ -349,6 +388,7 @@ macro(LCG_prepare_paths)
   # Required if both Qt3 and Qt4 are available.
   string(REGEX MATCH "[0-9]+" _qt_major_version ${Qt_config_version})
   set(DESIRED_QT_VERSION ${_qt_major_version} CACHE STRING "Pick a version of QT to use: 3 or 4")
+  mark_as_advanced(DESIRED_QT_VERSION)
 
   if(comp STREQUAL clang30)
     set(GCCXML_CXX_COMPILER gcc CACHE STRING "Compiler that GCCXML must use.")
@@ -368,9 +408,12 @@ macro(LCG_prepare_paths)
 
   foreach(name ${LCG_projects})
     list(APPEND LCG_PREFIX_PATH ${${name}_home})
+    list(APPEND LCG_INCLUDE_PATH ${${name}_base}/include)
     # We need to add python to the include path because it's the only
     # way to search for a (generic) file.
-    list(APPEND LCG_INCLUDE_PATH ${${name}_base}/include ${${name}_home}/python)
+    foreach(h ${${name}_home})
+      list(APPEND LCG_INCLUDE_PATH ${h}/python)
+    endforeach()
   endforeach()
   # Add the LCG externals dirs to the search paths.
   foreach(name ${LCG_externals})
@@ -384,4 +427,20 @@ macro(LCG_prepare_paths)
   set(CMAKE_INCLUDE_PATH ${LCG_INCLUDE_PATH} ${CMAKE_INCLUDE_PATH})
 
   #message(STATUS "LCG_PREFIX_PATH: ${LCG_PREFIX_PATH}")
+
+  #===============================================================================
+  # Path to programs that a toolchain should define (not mandatory).
+  #===============================================================================
+  if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+    find_program(CMAKE_AR       ar       )
+    find_program(CMAKE_LINKER   ld       )
+    find_program(CMAKE_NM       nm       )
+    find_program(CMAKE_OBJCOPY  objcopy  )
+    find_program(CMAKE_OBJDUMP  objdump  )
+    find_program(CMAKE_RANLIB   ranlib   )
+    find_program(CMAKE_STRIP    strip    )
+    mark_as_advanced(CMAKE_AR CMAKE_LINKER CMAKE_NM CMAKE_OBJCOPY CMAKE_OBJDUMP
+                     CMAKE_RANLIB CMAKE_STRIP)
+  endif()
+
 endmacro()

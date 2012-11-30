@@ -11,4 +11,4 @@ set(PYTOOLS_PYTHON_PATH ${pytools_home}/lib/python${Python_config_version_twodig
 set(PYTOOLS_BINARY_PATH ${pytools_home}/bin
     CACHE PATH "Path to the pytools LCG package (scripts)")
 
-mark_as_advanced(PYTOOLS_FOUND PYTOOLS_PYTHON_PATH)
+mark_as_advanced(PYTOOLS_FOUND PYTOOLS_PYTHON_PATH PYTOOLS_BINARY_PATH)
