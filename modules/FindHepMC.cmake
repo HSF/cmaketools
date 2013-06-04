@@ -6,8 +6,10 @@
 #  HEPMC_INCLUDE_DIRS (not cached)
 #  HEPMC_LIBRARIES
 
-find_path(HEPMC_INCLUDE_DIR HepMC/GenEvent.h)
-find_library(HEPMC_LIBRARIES NAMES HepMC)
+find_path(HEPMC_INCLUDE_DIR HepMC/GenEvent.h 
+          HINTS $ENV{HEPMC_ROOT_DIR}/include ${HEPMC_ROOT_DIR}/include)
+find_library(HEPMC_LIBRARIES NAMES HepMC 
+             HINTS $ENV{HEPMC_ROOT_DIR}/lib ${HEPMC_ROOT_DIR}/lib)
 
 set(HEPMC_INCLUDE_DIRS ${HEPMC_INCLUDE_DIR})
 
