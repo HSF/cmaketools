@@ -1,0 +1,18 @@
+
+find_path(HERWIGPP_INCLUDE_DIR Herwig++/Analysis/BELLECharmAnalysis.h
+          HINTS $ENV{HERWIGPP_ROOT_DIR}/include ${HERWIGPP_ROOT_DIR}/include)
+
+#find_library(HERWIGPP_LIBRARY NAMES Herwig
+#             PATH_SUFFIXES Herwig++
+#             HINTS ${HERWIGPP_ROOT_DIR}/lib $ENV{HERWIGPP_ROOT_DIR}/lib
+
+set(HERWIGPP_INCLUDE_DIRS ${HERWIGPP_INCLUDE_DIR})
+set(HERWIGPP_LIBRARIES)
+
+# handle the QUIETLY and REQUIRED arguments and set PHOTOS_FOUND to TRUE if
+# all listed variables are TRUE
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Herwig++ DEFAULT_MSG HERWIGPP_INCLUDE_DIR)
+
+mark_as_advanced(HERWIGPP_FOUND HERWIGPP_INCLUDE_DIR HERWIGPP_LIBRARY)
