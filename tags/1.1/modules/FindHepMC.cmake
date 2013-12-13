@@ -1,0 +1,25 @@
+# - Locate HepMC library
+# Defines:
+#
+#  HEPMC_FOUND
+#  HEPMC_INCLUDE_DIR
+#  HEPMC_INCLUDE_DIRS (not cached)
+#  HEPMC_LIBRARIES
+
+find_path(HEPMC_INCLUDE_DIR HepMC/GenEvent.h 
+          HINTS ${HEPMC_ROOT_DIR}/include $ENV{HEPMC_ROOT_DIR}/include)
+find_library(HEPMC_LIBRARY NAMES HepMC 
+             HINTS ${HEPMC_ROOT_DIR}/lib $ENV{HEPMC_ROOT_DIR}/lib)
+find_library(HEPMC_fio_LIBRARY NAMES HepMCfio 
+             HINTS ${HEPMC_ROOT_DIR}/lib $ENV{HEPMC_ROOT_DIR}/lib)
+
+set(HEPMC_INCLUDE_DIRS ${HEPMC_INCLUDE_DIR})
+set(HEPMC_LIBRARIES ${HEPMC_LIBRARY})
+
+
+# handle the QUIETLY and REQUIRED arguments and set HEPMC_FOUND to TRUE if
+# all listed variables are TRUE
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(HepMC DEFAULT_MSG HEPMC_INCLUDE_DIR HEPMC_LIBRARY)
+
+mark_as_advanced(HEPMC_FOUND HEPMC_INCLUDE_DIR HEPMC_LIBRARY HEPMC_fio_LIBRARY)

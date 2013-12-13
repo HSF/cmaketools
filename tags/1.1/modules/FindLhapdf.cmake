@@ -1,0 +1,26 @@
+# - Locate lhapdf library
+# Defines:
+#
+#  LHAPDF_FOUND
+#  LHAPDF_INCLUDE_DIR
+#  LHAPDF_INCLUDE_DIRS (not cached)
+#  LHAPDF_LIBRARY
+#  LHAPDF_LIBRARIES (not cached)
+
+
+find_path(LHAPDF_INCLUDE_DIR LHAPDF/LHAPDF.h
+          HINTS $ENV{LHAPDF_ROOT_DIR}/include ${LHAPDF_ROOT_DIR}/include)
+
+find_library(LHAPDF_LIBRARY NAMES LHAPDF
+             HINTS $ENV{LHAPDF_ROOT_DIR}/lib ${LHAPDF_ROOT_DIR}/lib)
+
+set(LHAPDF_INCLUDE_DIRS ${LHAPDF_INCLUDE_DIR})
+set(LHAPDF_LIBRARIES ${LHAPDF_LIBRARY})
+
+# handle the QUIETLY and REQUIRED arguments and set LHAPDF_FOUND to TRUE if
+# all listed variables are TRUE
+
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(lhapdf DEFAULT_MSG LHAPDF_INCLUDE_DIR LHAPDF_LIBRARY)
+
+mark_as_advanced(LHAPDF_FOUND LHAPDF_INCLUDE_DIR LHAPDF_LIBRARY)
