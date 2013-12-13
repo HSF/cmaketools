@@ -13,10 +13,13 @@ find_path(EVTGEN_INCLUDE_DIR EvtGen/EvtGen.hh
 find_library(EVTGEN_LIBRARY NAMES EvtGen
              HINTS $ENV{EVTGEN_ROOT_DIR}/lib ${EVTGEN_ROOT_DIR}/lib)
 
+find_library(EVTGEN_ExternalDecays_LIBRARY NAMES EvtGenExternal
+             HINTS $ENV{EVTGEN_ROOT_DIR}/lib ${EVTGEN_ROOT_DIR}/lib)
+
 set(EVTGEN_INCLUDE_DIRS ${EVTGEN_INCLUDE_DIR})
-set(EVTGEN_LIBRARIES ${EVTGEN_LIBRARY})
+set(EVTGEN_LIBRARIES ${EVTGEN_LIBRARY} ${EVTGEN_ExternalDecays_LIBRARY})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Evtgen DEFAULT_MSG EVTGEN_INCLUDE_DIR EVTGEN_LIBRARY)
+find_package_handle_standard_args(Evtgen DEFAULT_MSG EVTGEN_INCLUDE_DIR EVTGEN_LIBRARY EVTGEN_ExternalDecays_LIBRARY)
 
-mark_as_advanced(EVTGEN_FOUND EVTGEN_INCLUDE_DIR EVTGEN_LIBRARY)
+mark_as_advanced(EVTGEN_FOUND EVTGEN_INCLUDE_DIR EVTGEN_LIBRARY EVTGEN_ExternalDecays_LIBRARY)

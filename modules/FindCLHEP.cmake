@@ -23,6 +23,9 @@ if(CLHEP_INCLUDE_DIR)
   endif()
 endif()
 
+find_library(CLHEP_MAIN_LIBRARY CLHEP 
+               HINTS $ENV{CLHEP_ROOT_DIR}/lib ${CLHEP_ROOT_DIR}/lib)
+
 set(_CLHEP_COMPONENTS Cast Evaluator Exceptions GenericFunctions Geometry Random RandomObjects RefCount Vector Matrix)
 foreach(component ${_CLHEP_COMPONENTS})
   find_library(CLHEP_${component}_LIBRARY NAMES CLHEP-${component}-${CLHEP_VERSION}
