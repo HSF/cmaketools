@@ -15,10 +15,10 @@ if(NOT PHOTOS++_FIND_COMPONENTS)
 endif()
 
 foreach(component ${PHOTOS++_FIND_COMPONENTS})
-  find_library(PHOTOS++_${component}_LIBRARY NAMES Photos${component
+  find_library(PHOTOS++_${component}_LIBRARY NAMES Photos${component}
                HINTS ${PHOTOS++_ROOT_DIR}/lib
                      $ENV{PHOTOSPP_ROOT_DIR}/lib
-                     ${PHOTOSPP_ROOT_DIR}/lib})
+                     ${PHOTOSPP_ROOT_DIR}/lib)
   if (PHOTOS++_${component}_LIBRARY)
     set(PHOTOS++_${component}_FOUND 1)
     list(APPEND PHOTOS++_LIBRARIES ${PHOTOS++_${component}_LIBRARY})
