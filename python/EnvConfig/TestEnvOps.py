@@ -5,6 +5,7 @@ Created on Jul 12, 2011
 '''
 import unittest
 import os
+import sys
 import shutil
 from tempfile import mkdtemp
 
@@ -100,6 +101,20 @@ class Test(unittest.TestCase):
 
         control.unset('MY_PATH')
         self.assertTrue('MY_PATH' not in control)
+
+
+    def testHidingDotVar(self):
+        control = Control.Environment()
+        control.variables['.'].set('some/dir')
+
+        self.assertTrue('.' in control.variables)
+        self.assertTrue('.' not in control.vars())
+        self.assertTrue('.' not in control.vars(strings=False))
+        
+        control.set('MY_DIR', '${.}')
+        self.assertEqual(control.var('MY_DIR').value(True), 'some/dir')
+        self.assertEqual(control.vars()['MY_DIR'], 'some/dir')
+        
 
 
     def testWrite(self):
@@ -402,8 +417,13 @@ class Test(unittest.TestCase):
 <env:append variable="included">from subdir2</env:append>
 </env:config>''',}})
 
+        # set the basic search path to the minimal default
         if 'ENVXMLPATH' in os.environ:
             del os.environ['ENVXMLPATH']
+        import EnvConfig
+        saved_path = list(EnvConfig.path)
+        EnvConfig.path[:] = ['.']
+
         control = Control.Environment(searchPath=[])
 
         #self.assertRaises(OSError, control.loadXML, tmp('first.xml'))
@@ -451,13 +471,15 @@ class Test(unittest.TestCase):
         self.assertEqual(str(control['test_path']), 'data1:data2')
         self.assertEqual(str(control['derived']), 'another_first')
 
-        os.environ['ENVXMLPATH'] = os.pathsep.join([tmp(), tmp('subdir')])
+        #os.environ['ENVXMLPATH'] = os.pathsep.join([tmp(), tmp('subdir')])
+        EnvConfig.path[:] = ['.', tmp(), tmp('subdir')]
         control = Control.Environment(searchPath=[])
         control.loadXML(tmp('second.xml'))
         self.assertEqual(str(control['main']), 'second')
         self.assertEqual(str(control['test_path']), 'data0:data1')
         self.assertEqual(str(control['map']), 'this_is_second_inc')
-        del os.environ['ENVXMLPATH']
+        #del os.environ['ENVXMLPATH']
+        EnvConfig.path[:] = ['.']
 
         control = Control.Environment(searchPath=[])
         control.loadXML(tmp('third.xml'))
@@ -478,6 +500,9 @@ class Test(unittest.TestCase):
         control = Control.Environment(searchPath=[])
         #self.assertRaises(OSError, control.loadXML, tmp('first.xml'))
         control.loadXML(tmp('recursion.xml'))
+
+        # restore search path
+        EnvConfig.path = saved_path
 
 
     def testFileDir(self):

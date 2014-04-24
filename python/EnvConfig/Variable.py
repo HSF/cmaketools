@@ -5,6 +5,7 @@ Created on Jun 27, 2011
 '''
 import re
 import os
+import logging
 from os.path import normpath
 from zipfile import is_zipfile
 
@@ -74,9 +75,13 @@ class EnvExpander(VariableProcessor):
     def _repl(self, value):
         m = self._exp.search(value)
         if m:
-            value = (value[:m.start()]
-                     + str(self._env[filter(None, m.groups())[0]])
-                     + value[m.end():])
+            try:
+                value = (value[:m.start()]
+                         + str(self._env[filter(None, m.groups())[0]])
+                         + value[m.end():])
+            except KeyError, k:
+                logging.debug('KeyError: %s unknown while expanding %s', k, value)
+                return value
             return self._repl(value)
         else:
             return value
@@ -160,11 +165,11 @@ class VariableBase(object):
     Base class for the classes used to manipulate the environment.
     '''
 
-    def __init__(self, name, local=False, report=None):
-        self.report = report
+    def __init__(self, name, local=False):
         self.varName = name
         self.local = local
         self.expandVars = True
+        self.log = logging.getLogger('Variable')
 
     def process(self, value, env):
         '''
@@ -185,8 +190,8 @@ class List(VariableBase):
     Some operations are done with separator, which is usually colon. For windows use semicolon.
     '''
 
-    def __init__(self, name, local=False, report=None):
-        super(List, self).__init__(name, local, report)
+    def __init__(self, name, local=False):
+        super(List, self).__init__(name, local)
         self.val = []
 
     def name(self):
@@ -225,7 +230,7 @@ class List(VariableBase):
         for i in range(len(value)):
             val = value[i]
             if val not in value:
-                self.report.addWarn('Value "'+val+'" not found in List: "'+self.varName+'". Removal canceled.')
+                self.log.info('Value "%s" not found in List: "%s". Removal canceled.', val, self.varName)
             while val in self.val:
                 self.val.remove(val)
 
@@ -264,7 +269,7 @@ class List(VariableBase):
 
     def __setitem__(self, key, value):
         if value in self.val:
-            self.report.addWarn('Var: "' + self.varName + '" value: "' + value + '". Addition canceled because of duplicate entry.')
+            self.log.info('Var: "%s" value: "%s". Addition canceled because of duplicate entry.', self.varName, value)
         else:
             self.val.insert(key, value)
 
@@ -288,8 +293,8 @@ class List(VariableBase):
 class Scalar(VariableBase):
     '''Class for manipulating with environment scalars.'''
 
-    def __init__(self, name, local=False, report=None):
-        super(Scalar, self).__init__(name, local, report)
+    def __init__(self, name, local=False):
+        super(Scalar, self).__init__(name, local)
         self.val = ''
 
     def name(self):
