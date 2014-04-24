@@ -3,7 +3,7 @@
 # Simple script to update the LbUtils copy of the script env.py in Gaudi.
 #
 
-git_root=/afs/cern.ch/sw/Gaudi/git/Gaudi.git
+git_root=http://git.cern.ch/pub/gaudi.git
 
 # Check if we have all the commands we need.
 for c in git ; do
@@ -16,12 +16,6 @@ for c in git ; do
     fi
 done
 
-# Chech if we can access the Gaudi GIT repository from AFS.
-if [ ! -d ${git_root} ] ; then
-    echo "This script must be run from a machine with access to AFS."
-    exit 1
-fi
-
 # Find ourselves (for the destination location)
 rootdir=$(dirname $0)
 
@@ -32,21 +26,32 @@ else
     remote_id=master
 fi
 
-notes_file=$rootdir/gaudi_cmake.notes
+notes_file=$rootdir/doc/gaudi_cmake.notes
 
 echo "Clean destination directory"
 # we do not remove '.svn' directories (or directories either)
-find $rootdir -noleaf -mindepth 1 -not -wholename "*.svn" -not -wholename "*/.git*" -not -name $(basename $0) -not -name .project -exec rm -rf \{} \;
+find $rootdir -noleaf -depth -mindepth 1 -type f -not -wholename "*.svn" -not -wholename "*/.git*" -not -name $(basename $0) -not -name .project -not -name "*.cmake" -exec rm -rfv \{} \;
 
 echo "Importing the files from ${remote_id}"
-git archive --remote=$git_root ${remote_id} cmake | \
-    tar -x -v -C $rootdir --strip-components=1 -f -
+git clone --bare $git_root $rootdir/.gaudi_tmp
+git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/env.py cmake/EnvConfig | \
+    tar -x -v -C $rootdir/python --strip-components=1 -f -
+git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/toolchain cmake/HEPToolsMacros.cmake cmake/InheritHEPTools.cmake cmake/UseHEPTools.cmake | \
+    tar -x -v -C $rootdir/heptools --strip-components=1 -f -
+git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/modules | \
+    tar -x -v -C $rootdir --strip-components=2 -f -
 
-echo "Creating dummy __init__.py"
-touch $rootdir/cmt2cmake/__init__.py
+svn_url=http://svn.cern.ch/guest/lhcb/Gauss/trunk/cmake
+echo "Importing files from ${svn_url}"
+svn export --force $svn_url $rootdir
+
 
 # create release notes
 (
-    cd $git_root
+    cd $rootdir/.gaudi_tmp
     git log --date=short --pretty=format:'! %ad - %an (%h)%n%n - %s%n%n%w(80,3,3)%b%n' ${remote_id} -- cmake
 ) > $notes_file
+
+svn log $svn_url > $rootdir/doc/gauss_cmake.notes
+
+rm -rf $rootdir/.gaudi_tmp
