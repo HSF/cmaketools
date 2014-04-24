@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.5)
 # Declare the version of HEP Tools we use
 # (must be done before including heptools-common to allow evolution of the
 # structure)
-set(heptools_version  64b)
+set(heptools_version  64c)
 
 include(${CMAKE_CURRENT_LIST_DIR}/heptools-common.cmake)
 
@@ -36,7 +36,7 @@ LCG_external_package(Boost             1.48.0                                   
 endif()
 LCG_external_package(bz2lib            1.0.2                                    )
 if(NOT APPLE)
-LCG_external_package(CASTOR            2.1.9-9                   castor         )
+LCG_external_package(CASTOR            2.1.13-6                  castor         )
 else()
 LCG_external_package(CASTOR            2.1.9-4                   castor         )
 endif()

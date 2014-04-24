@@ -14,8 +14,7 @@ class Test(unittest.TestCase):
 
 
     def setUp(self):
-        self.operations = xmlModule.XMLOperations()
-
+        pass
 
     def tearDown(self):
         pass
@@ -57,63 +56,6 @@ class Test(unittest.TestCase):
         self.assertEqual(variables, expected)
 
         os.remove('testOutputFile.xml')
-
-    def testCheck(self):
-        '''Test if the XML file check works'''
-        self.control = Control.Environment(useAsWriter = True)
-        self.control.append('myVar', 'app1:app2')
-        self.control.prepend('myVar', 'app1:pre2')
-        self.control.unset('myVar')
-        self.control.set('myVar', 'set1:app2')
-
-        self.control.finishXMLinput('testOutputFile.xml')
-        self.operations.check('testOutputFile.xml')
-
-        self.assertEqual(self.operations.report.error(0)[1], 'myVar')
-        self.assertEqual(self.operations.report.error(0)[2], 'unset overwrite')
-        self.assertEqual(self.operations.report.error(1)[1], 'myVar')
-        self.assertEqual(self.operations.report.error(1)[2], 'set overwrite')
-
-        os.remove('testOutputFile.xml')
-
-    def testMerge(self):
-        self.control = Control.Environment(useAsWriter = True)
-
-
-        self.control.set('MY_PATH','delVal')
-        self.control.unset('MY_PATH')
-
-        self.control.set('MY_PATH','setVal:multVal')
-        self.control.append('MY_PATH','appVal:multVal2')
-        self.control.prepend('MY_PATH','prepVal')
-
-        self.control.finishXMLinput('testOutputFile.xml')
-
-        self.control.startXMLinput()
-        self.control.append('MY_PATH','appVal2')
-        self.control.prepend('MY_PATH','prepVal2:multVal:multVal2')
-        self.control.remove('MY_PATH','multVal2')
-        self.control.finishXMLinput('testOutputFile2.xml')
-
-        self.operations.merge('testOutputFile.xml', 'testOutputFile2.xml', 'testOutputFile.xml')
-
-        self.control = Control.Environment()
-        self.control.loadXML('testOutputFile.xml')
-
-        self.assertFalse('delVal' in self.control['MY_PATH'])
-
-        self.assertTrue('appVal' in self.control['MY_PATH'])
-        self.assertTrue('appVal2' in self.control['MY_PATH'])
-        self.assertTrue('prepVal' in self.control['MY_PATH'])
-        self.assertTrue('prepVal' in self.control['MY_PATH'])
-        self.assertTrue('prepVal2' in self.control['MY_PATH'])
-        self.assertTrue('multVal' in self.control['MY_PATH'])
-        self.assertTrue('setVal' in self.control['MY_PATH'])
-
-        self.assertFalse('multVal2' in self.control['MY_PATH'])
-
-        os.remove('testOutputFile.xml')
-        os.remove('testOutputFile2.xml')
 
     def testParsing(self):
         data = StringIO('''<?xml version="1.0" ?>

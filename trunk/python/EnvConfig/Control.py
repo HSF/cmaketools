@@ -7,11 +7,13 @@ import xmlModule
 import os
 from time import gmtime, strftime
 import Variable
+import EnvConfig
+import logging
 
-class Environment():
+class Environment(object):
     '''object to hold settings of environment'''
 
-    def __init__(self, loadFromSystem=True, useAsWriter=False, reportLevel=1, searchPath=None):
+    def __init__(self, loadFromSystem=True, useAsWriter=False, searchPath=None):
         '''Initial variables to be pushed and setup
 
         append switch between append and prepend for initial variables.
@@ -19,19 +21,15 @@ class Environment():
         If useAsWriter == True than every change to variables is recorded to XML file.
         reportLevel sets the level of messaging.
         '''
-        self.report = xmlModule.Report(reportLevel)
+        self.log = logging.getLogger('Environment')
 
         self.separator = ':'
 
         # Prepeare the internal search path for xml files (used by 'include' elements)
-        self.searchPath = ['.']
-        if searchPath is not None:
-            self.searchPath.extend(searchPath)
-        try:
-            self.searchPath.extend(os.environ['ENVXMLPATH'].split(os.pathsep))
-        except KeyError:
-            # ignore if the env variable is not there
-            pass
+        if searchPath is None:
+            self.searchPath = []
+        else:
+            self.searchPath = list(searchPath)
 
         self.actions = {}
         self.actions['include'] = lambda n, c, h: self.loadXML(self._locate(n, c, h))
@@ -43,6 +41,7 @@ class Environment():
         self.actions['remove'] = lambda n, v, _: self.remove(n, v)
         self.actions['remove-regexp'] = lambda n, v, _: self.remove_regexp(n, v)
         self.actions['declare'] = self.declare
+        self.actions['search_path'] = lambda n, _1, _2: self.searchPath.extend(n.split(self.separator))
 
         self.variables = {}
 
@@ -58,7 +57,7 @@ class Environment():
         self._fileDirStack = []
         # Note: cannot use self.declare() because we do not want to write out
         #       the changes to ${.}
-        dot = Variable.Scalar('.', local=True, report=self.report)
+        dot = Variable.Scalar('.', local=True)
         dot.expandVars = False
         dot.set('')
         self.variables['.'] = dot
@@ -72,6 +71,7 @@ class Environment():
         if isabs(filename):
             return filename
 
+        self.log.debug('looking for %s', filename)
         if hints is None:
             hints = []
         elif type(hints) is str:
@@ -80,26 +80,39 @@ class Environment():
         if caller:
             calldir = dirname(caller)
             localfile = join(calldir, filename)
+            self.log.debug('trying %s', localfile)
             if isfile(localfile):
+                self.log.debug('OK (local file)')
                 return localfile
             # allow for relative hints
             hints = [join(calldir, hint) for hint in hints]
 
+        sp = EnvConfig.path + self.searchPath + hints
+        def candidates():
+            for d in sp:
+                f = normpath(join(d, filename))
+                self.log.debug('trying %s', f)
+                yield f
         try:
-            return (abspath(f)
-                    for f in [normpath(join(d, filename))
-                              for d in self.searchPath + hints]
-                    if isfile(f)).next()
+            f = (abspath(f) for f in candidates() if isfile(f)).next()
+            self.log.debug('OK')
+            return f
         except StopIteration:
             from errno import ENOENT
-            raise OSError(ENOENT, 'cannot find file in %r' % self.searchPath, filename)
+            raise OSError(ENOENT, 'cannot find file in %r' % sp, filename)
 
     def vars(self, strings=True):
         '''returns dictionary of all variables optionally converted to string'''
         if strings:
-            return dict([(n, v.value(True)) for n, v in self.variables.items()])
+            return dict([(n, v.value(True))
+                         for n, v in self.variables.items()
+                         if n != '.'])
         else:
-            return self.variables
+            # clone the dictionary to remove the internal special var '.'
+            vars_ = dict(self.variables)
+            if '.' in vars_:
+                del vars_['.']
+            return vars_
 
     def var(self, name):
         '''Gets a single variable. If not available then tries to load from system.'''
@@ -146,9 +159,9 @@ class Environment():
                         raise Variable.EnvError(name, 'redeclaration')
 
         if vartype.lower() == "list":
-            a = Variable.List(name, local, report=self.report)
+            a = Variable.List(name, local)
         else:
-            a = Variable.Scalar(name, local, report=self.report)
+            a = Variable.Scalar(name, local)
 
         if self.loadFromSystem and not local and name in os.environ:
             a.expandVars = False # disable var expansion when importing from the environment
@@ -196,9 +209,9 @@ class Environment():
             # FIXME: improve declare() to allow for a default.
             if name not in self.variables:
                 if self._guessType(name) == 'list':
-                    v = Variable.List(name, False, report=self.report)
+                    v = Variable.List(name, False)
                 else:
-                    v = Variable.Scalar(name, False, report=self.report)
+                    v = Variable.Scalar(name, False)
                 if self.loadFromSystem and name in os.environ:
                     v.set(os.environ[name], os.pathsep, environment=self.variables)
                 else:
@@ -251,7 +264,7 @@ class Environment():
         variables = XMLfile.variable(fileName, namespace=namespace)
         for i, (action, args) in enumerate(variables):
             if action not in self.actions:
-                self.report.addError('Node {0}: No action taken with var "{1}". Probably wrong action argument: "{2}".'.format(i, args[0], action))
+                self.log.error('Node {0}: No action taken with var "{1}". Probably wrong action argument: "{2}".'.format(i, args[0], action))
             else:
                 self.actions[action](*args) # pylint: disable=W0142
         # restore the old value of ${.}
@@ -316,7 +329,7 @@ class Environment():
         Call the variable processors on all the variables.
         '''
         for v in self.variables.values():
-            v.val = v.process(val, self.variables)
+            v.val = v.process(v.val, self.variables)
 
     def _concatenate(self, value):
         '''Returns a variable string with separator separator from the values list'''
@@ -339,7 +352,7 @@ class Environment():
 
     def __setitem__(self, key, value):
         if key in self.variables.keys():
-            self.report.addWarn('Addition canceled because of duplicate entry. Var: "' + key + '" value: "' + value + '".')
+            self.log.warning('Addition canceled because of duplicate entry. Var: "%s" value: "%s".', key, value)
         else:
             self.append(key, value)
 

@@ -35,8 +35,18 @@ LCG_prepare_paths()"""
                         "GCCXML":  "gccxml",
                         "Qt":  "qt",
                         "CASTOR":  "castor",
-                        "lfc": "Grid/LFC",
                         "TBB":  "tbb",
+                        "cgsigsoap": "Grid/cgsi-gsoap",
+                        "epel": "Grid/epel",
+                        "gfal": "Grid/gfal",
+                        "globus": "Grid/globus",
+                        "gridftp_ifce": "Grid/gridftp-ifce",
+                        "is_ifce": "Grid/is-ifce",
+                        "lcgdmcommon": "Grid/lcg-dm-common",
+                        "lfc": "Grid/LFC",
+                        "srm_ifce": "Grid/srm-ifce",
+                        "vomsapic": "Grid/voms-api-c",
+                        "voms": "Grid/voms",
                         }
 
     __special_names__ = {"qt": "Qt"}
@@ -157,7 +167,7 @@ LCG_prepare_paths()"""
         for name in sorted(versions.keys(), key=packageSorting):
             # special case
             if name == "uuid":
-                yield "if(NOT ${LCG_OS}${LCG_OS_VERS} STREQUAL slc6) # uuid is not distributed with SLC6"
+                yield "if(NOT ${LCG_OS}${LCG_OSVERS} STREQUAL slc6) # uuid is not distributed with SLC6"
             # LCG_external_package(CLHEP            1.9.4.7             clhep)
             yield template % (name, versions[name], self.__special_dirs__.get(name, ""))
             if name == "uuid":

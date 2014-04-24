@@ -250,69 +250,9 @@ function(lcg_get_target_platform)
   endforeach()
 endfunction()
 
-
 ################################################################################
-# Run platform detection (system and target).
-################################################################################
-# Deduce the LCG configuration tag from the system
-lcg_detect_host_platform()
-lcg_get_target_platform()
-
-## Debug messages.
-#foreach(p LCG_HOST_ LCG_)
-#  foreach(v ARCH OS OSVERS COMP COMPVERS)
-#    message(STATUS "toolchain: ${p}${v} -> ${${p}${v}}")
-#  endforeach()
-#endforeach()
-#message(STATUS "toolchain: LCG_BUILD_TYPE -> ${LCG_BUILD_TYPE}")
-#
-#message(STATUS "toolchain: CMAKE_HOST_SYSTEM_PROCESSOR -> ${CMAKE_HOST_SYSTEM_PROCESSOR}")
-#message(STATUS "toolchain: CMAKE_HOST_SYSTEM_NAME      -> ${CMAKE_HOST_SYSTEM_NAME}")
-#message(STATUS "toolchain: CMAKE_HOST_SYSTEM_VERSION   -> ${CMAKE_HOST_SYSTEM_VERSION}")
-
-# LCG location
-if(NOT heptools_version)
-  message(FATAL_ERROR "Variable heptools_version not defined. It must be defined before including heptools-common.cmake")
-endif()
-
-find_path(LCG_releases NAMES LCGCMT/LCGCMT_${heptools_version} LCGCMT/LCGCMT-${heptools_version} PATHS ENV CMTPROJECTPATH)
-if(LCG_releases)
-  message(STATUS "Found LCGCMT ${heptools_version} in ${LCG_releases}")
-else()
-  message(FATAL_ERROR "Cannot find location of LCGCMT ${heptools_version}")
-endif()
-# define location of externals
-get_filename_component(_lcg_rel_type ${LCG_releases} NAME)
-if(_lcg_rel_type STREQUAL "external")
-  set(LCG_external ${LCG_releases})
-else()
-  get_filename_component(LCG_external ${LCG_releases}/../../external ABSOLUTE)
-endif()
-
-# Define the variables and search paths for AA projects
-macro(LCG_AA_project name version)
-  set(${name}_config_version ${version})
-  set(${name}_native_version ${version})
-  set(${name}_base ${LCG_releases}/${name}/${${name}_native_version})
-  set(${name}_home ${${name}_base}/${LCG_platform})
-  if(${name} STREQUAL ROOT)
-    # ROOT is special
-    set(ROOT_home ${ROOT_home}/root)
-  endif()
-  if(NOT LCG_platform STREQUAL LCG_system)
-    # For AA projects we want to be able to fall back on non-debug builds.
-    if(NOT ${name} STREQUAL ROOT)
-      set(${name}_home ${${name}_home} ${${name}_base}/${LCG_system})
-    else()
-      # ROOT is special
-      set(ROOT_home ${ROOT_home} ${ROOT_base}/${LCG_system}/root)
-    endif()
-  endif()
-  list(APPEND LCG_projects ${name})
-endmacro()
-
 # Define variables and location of the compiler.
-macro(LCG_compiler id flavor version)
+macro(_lcg_compiler id flavor version)
   #message(STATUS "LCG_compiler(${ARGV})")
   if(${id} STREQUAL ${LCG_COMP}${LCG_COMPVERS} AND NOT LCG_USE_NATIVE_COMPILER)
     if(${flavor} STREQUAL "gcc")
@@ -352,26 +292,74 @@ macro(LCG_compiler id flavor version)
   endif()
 endmacro()
 
-# Define the variables for external projects
-# Usage:
-#   LCG_external_package(<Package> <version> [<directory name>])
-# Examples:
-#   LCG_external_package(Boost 1.44.0)
-#   LCG_external_package(CLHEP 1.9.4.7 clhep)
-macro(LCG_external_package name version)
-  set(${name}_config_version ${version} CACHE STRING "Version of ${name}")
-  mark_as_advanced(${name}_config_version)
-  set(${name}_native_version ${${name}_config_version})
-  if(${ARGC} GREATER 2)
-    set(${name}_directory_name ${ARGV2})
-  else()
-    set(${name}_directory_name ${name})
-  endif()
-  list(APPEND LCG_externals ${name})
+################################################################################
+# Enable the correct compiler.
+macro(lcg_define_compiler)
+    _lcg_compiler(gcc43 gcc 4.3.6)
+    _lcg_compiler(gcc46 gcc 4.6.3)
+    _lcg_compiler(gcc47 gcc 4.7.2)
+    _lcg_compiler(gcc48 gcc 4.8.1)
+    _lcg_compiler(clang30 clang 3.0)
+    _lcg_compiler(clang32 clang 3.2)
+    _lcg_compiler(clang33 clang 3.3)
+    _lcg_compiler(gccmax gcc 4.8.1)
 endmacro()
 
+################################################################################
+# Enable the correct compiler.
+macro(lcg_set_external name hash version dir)
+    set(${name}_config_version ${version} CACHE STRING "Version of ${name}")
+    mark_as_advanced(${name}_config_version)
+    set(${name}_native_version ${${name}_config_version})
+    set(${name}_home ${LCG_releases}/${dir})
+
+    if("${name}" MATCHES "ROOT|COOL|CORAL|RELAX|LCGCMT")
+        #message(STATUS "AA Project ${name} -> ${${name}_config_version}")
+        get_filename_component(${name}_base ${${name}_home} PATH)
+        if(${name} STREQUAL ROOT)
+          # ROOT is special
+          set(ROOT_home ${ROOT_home} ${ROOT_home}/root)
+        endif()
+        if(NOT LCG_platform STREQUAL LCG_system)
+          # For AA projects we want to be able to fall back on non-debug builds.
+          if(NOT ${name} STREQUAL ROOT)
+            set(${name}_home ${${name}_home} ${${name}_base}/${LCG_system})
+          else()
+            # ROOT is special
+            set(ROOT_home ${ROOT_home} ${ROOT_base}/${LCG_system} ${ROOT_base}/${LCG_system}/root)
+          endif()
+        endif()
+        list(APPEND LCG_projects ${name})
+    elseif("${name}" STREQUAL "cmaketools")
+        # ignore problematic externals
+    else()
+        #message(STATUS "External ${name} -> ${${name}_config_version}")
+        list(APPEND LCG_externals ${name})
+    endif()
+endmacro()
+
+################################################################################
+# Find common programs that a toolchain should define (not mandatory).
+macro(lcg_find_common_tools)
+  #=============================================================================
+  # Path to programs that a toolchain should define (not mandatory).
+  #=============================================================================
+  if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+    find_program(CMAKE_AR       ar       )
+    find_program(CMAKE_LINKER   ld       )
+    find_program(CMAKE_NM       nm       )
+    find_program(CMAKE_OBJCOPY  objcopy  )
+    find_program(CMAKE_OBJDUMP  objdump  )
+    find_program(CMAKE_RANLIB   ranlib   )
+    find_program(CMAKE_STRIP    strip    )
+    mark_as_advanced(CMAKE_AR CMAKE_LINKER CMAKE_NM CMAKE_OBJCOPY CMAKE_OBJDUMP
+                     CMAKE_RANLIB CMAKE_STRIP)
+  endif()
+endmacro()
+
+################################################################################
 # Define the search paths from the configured versions
-macro(LCG_prepare_paths)
+macro(lcg_prepare_paths)
   #===============================================================================
   # Derived variables
   #===============================================================================
@@ -403,13 +391,6 @@ macro(LCG_prepare_paths)
     set(Boost_NO_SYSTEM_PATHS ON)
   endif()
 
-  # These externals require the version of python appended to their version.
-  foreach(external Boost pytools pygraphics pyanalysis QMtest)
-    if(${external}_config_version)
-      set(${external}_native_version ${${external}_config_version}_python${Python_config_version_twodigit})
-    endif()
-  endforeach()
-
   # Required if both Qt3 and Qt4 are available.
   string(REGEX MATCH "[0-9]+" _qt_major_version ${Qt_config_version})
   set(DESIRED_QT_VERSION ${_qt_major_version} CACHE STRING "Pick a version of QT to use: 3 or 4")
@@ -426,11 +407,6 @@ macro(LCG_prepare_paths)
   #===============================================================================
   # Construct the actual PREFIX and INCLUDE PATHs
   #===============================================================================
-  # Define the _home variables (not cached)
-  foreach(name ${LCG_externals})
-    set(${name}_home ${LCG_external}/${${name}_directory_name}/${${name}_native_version}/${LCG_system})
-  endforeach()
-
   foreach(name ${LCG_projects})
     list(APPEND LCG_PREFIX_PATH ${${name}_home})
     list(APPEND LCG_INCLUDE_PATH ${${name}_base}/include)
@@ -452,20 +428,5 @@ macro(LCG_prepare_paths)
   set(CMAKE_INCLUDE_PATH ${LCG_INCLUDE_PATH} ${CMAKE_INCLUDE_PATH})
 
   #message(STATUS "LCG_PREFIX_PATH: ${LCG_PREFIX_PATH}")
-
-  #===============================================================================
-  # Path to programs that a toolchain should define (not mandatory).
-  #===============================================================================
-  if(CMAKE_SYSTEM_NAME STREQUAL Linux)
-    find_program(CMAKE_AR       ar       )
-    find_program(CMAKE_LINKER   ld       )
-    find_program(CMAKE_NM       nm       )
-    find_program(CMAKE_OBJCOPY  objcopy  )
-    find_program(CMAKE_OBJDUMP  objdump  )
-    find_program(CMAKE_RANLIB   ranlib   )
-    find_program(CMAKE_STRIP    strip    )
-    mark_as_advanced(CMAKE_AR CMAKE_LINKER CMAKE_NM CMAKE_OBJCOPY CMAKE_OBJDUMP
-                     CMAKE_RANLIB CMAKE_STRIP)
-  endif()
-
+  #message(STATUS "LCG_INCLUDE_PATH: ${LCG_INCLUDE_PATH}")
 endmacro()
