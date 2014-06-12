@@ -39,11 +39,11 @@ git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/env.py cmake/EnvConf
 git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/toolchain cmake/HEPToolsMacros.cmake cmake/InheritHEPTools.cmake cmake/UseHEPTools.cmake | \
     tar -x -v -C $rootdir/heptools --strip-components=1 -f -
 git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/modules | \
-    tar -x -v -C $rootdir --strip-components=2 -f -
+    tar -x -v -C $rootdir --strip-components=1 -f -
 
 svn_url=http://svn.cern.ch/guest/lhcb/Gauss/trunk/cmake
 echo "Importing files from ${svn_url}"
-svn export --force $svn_url $rootdir
+svn export --force $svn_url $rootdir/modules
 
 
 # create release notes
