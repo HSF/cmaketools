@@ -100,6 +100,8 @@ class PathNormalizer(VariableProcessor):
     Call os.path.normpath for all the entries of the variable.
     '''
     def process(self, variable, value):
+        if not value: # do not process empty strings/lists
+            return value
         if isinstance(value, str):
             if '://' not in value: # this might be a URL
                 value = normpath(value)

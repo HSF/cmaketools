@@ -3,6 +3,7 @@
 # This module will define the following variables:
 #  QMTEST_EXECUTABLE  - the qmtest main script
 #  QMTEST_PYTHON_PATH - directory containing the Python module 'qm'
+#  QMTEST_BINARY_PATH - directory with the qmtest executable
 
 find_program(QMTEST_EXECUTABLE
   NAMES qmtest

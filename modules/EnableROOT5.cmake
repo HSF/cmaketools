@@ -120,11 +120,13 @@ macro(reflex_generate_dictionary dictionary _headerfile _selectionfile)
     set(headerfiles ${CMAKE_CURRENT_SOURCE_DIR}/${_headerfile})
   endif()
 
-  set(gensrcdict ${dictionary}_dict.cpp)
+  set(gensrcdict ${dictionary}Dict.cpp)
 
   if(ARG_SPLIT_CLASSDEF)
     set(ARG_OPTIONS ${ARG_OPTIONS} --split=classdef)
-    set(gensrcclassdef ${dictionary}_dict_classdef.cpp)
+    set(gensrcclassdef ${dictionary}Dict_classdef.cpp)
+  else()
+    set(gensrcclassdef)
   endif()
 
   if(NOT MSVC)
@@ -175,7 +177,6 @@ macro(reflex_generate_dictionary dictionary _headerfile _selectionfile)
   add_custom_target(${dictionary}Gen ALL DEPENDS ${gensrcdict} ${rootmapname} ${gensrcclassdef})
 
   set_property(TARGET ${dictionary}Gen PROPERTY ROOTMAPFILE ${rootmapname})
-
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -184,15 +185,21 @@ endmacro()
 # Generate and build a Reflex dictionary library from the specified header and selection.
 #-------------------------------------------------------------------------------
 function(reflex_dictionary dictionary headerfile selectionfile)
-  CMAKE_PARSE_ARGUMENTS(ARG "" "" "LINK_LIBRARIES;OPTIONS" ${ARGN})
+  CMAKE_PARSE_ARGUMENTS(ARG "SPLIT_CLASSDEF" "" "LINK_LIBRARIES;OPTIONS" ${ARGN})
   # ensure that we split on the spaces
   separate_arguments(ARG_OPTIONS)
-  reflex_generate_dictionary(${dictionary} ${headerfile} ${selectionfile} OPTIONS ${ARG_OPTIONS})
+  # we need to forward the SPLIT_CLASSDEF option to reflex_dictionary()
+  if(ARG_SPLIT_CLASSDEF)
+    set(ARG_SPLIT_CLASSDEF SPLIT_CLASSDEF)
+  else()
+    set(ARG_SPLIT_CLASSDEF)
+  endif()
+  reflex_generate_dictionary(${dictionary} ${headerfile} ${selectionfile} OPTIONS ${ARG_OPTIONS} ${ARG_SPLIT_CLASSDEF})
   include_directories(${ROOT_INCLUDE_DIR})
   add_library(${dictionary}Dict MODULE ${gensrcdict})
   _find_ROOT_components(Reflex)
   if(NOT ROOT_Reflex_LIBRARY)
-    message(FATAL_ERROR "Cannot find ROOT Reflex component: cannot build dictioanry ${dictionary}")
+    message(FATAL_ERROR "Cannot find ROOT Reflex component: cannot build dictionary ${dictionary}")
   endif()
   target_link_libraries(${dictionary}Dict ${ARG_LINK_LIBRARIES} ${ROOT_Reflex_LIBRARY})
   # ensure that *Gen and *Dict are not built at the same time
