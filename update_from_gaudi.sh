@@ -40,6 +40,8 @@ git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/toolchain cmake/HEPT
     tar -x -v -C $rootdir/heptools --strip-components=1 -f -
 git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/modules | \
     tar -x -v -C $rootdir --strip-components=1 -f -
+git archive --remote=$rootdir/.gaudi_tmp ${remote_id} cmake/GaudiProjectConfig.cmake cmake/GaudiBuildFlags.cmake  | \
+    tar -x -v -C $rootdir/gaudi --strip-components=1 -f -
 
 svn_url=http://svn.cern.ch/guest/lhcb/Gauss/trunk/cmake
 echo "Importing files from ${svn_url}"
