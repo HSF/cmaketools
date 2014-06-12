@@ -8,6 +8,7 @@
 #  XROOTD_<component>_FOUND
 #  XROOTD_LIBRARIES (not cached)
 #  XROOTD_LIBRARY_DIRS (not cached)
+#  XROOTD_EXECUTABLE
 
 
 # Enforce a minimal list if none is explicitly requested
@@ -38,9 +39,12 @@ if(XROOTD_LIBRARY_DIRS)
   list(REMOVE_DUPLICATES XROOTD_LIBRARY_DIRS)
 endif()
 
+find_program(XROOTD_EXECUTABLE NAMES xrd
+             HINTS ${XROOTD_INCLUDE_DIR}/../bin)
+
 # handle the QUIETLY and REQUIRED arguments and set SQLITE_FOUND to TRUE if
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Xrootd DEFAULT_MSG XROOTD_INCLUDE_DIR XROOTD_LIBRARIES)
 
-mark_as_advanced(XROOTD_FOUND XROOTD_INCLUDE_DIR)
+mark_as_advanced(XROOTD_FOUND XROOTD_INCLUDE_DIR XROOTD_EXECUTABLE)

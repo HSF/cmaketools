@@ -39,10 +39,10 @@ find_path(CORAL_PYTHON_PATH coral.py)
 
 set(CORAL_INCLUDE_DIRS ${CORAL_INCLUDE_DIR})
 
-find_program(CORAL_replica_manager_EXECUTABLE coral_replica_manager)
-mark_as_advanced(CORAL_replica_manager_EXECUTABLE)
-if(CORAL_replica_manager_EXECUTABLE)
-  get_filename_component(CORAL_BINARY_PATH ${CORAL_replica_manager_EXECUTABLE} PATH)
+find_program(CORAL_coralServer_EXECUTABLE coralServer)
+mark_as_advanced(CORAL_coralServer_EXECUTABLE)
+if(CORAL_coralServer_EXECUTABLE)
+  get_filename_component(CORAL_BINARY_PATH ${CORAL_coralServer_EXECUTABLE} PATH)
 endif()
 
 # handle the QUIETLY and REQUIRED arguments and set CORAL_FOUND to TRUE if

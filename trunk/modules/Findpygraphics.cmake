@@ -5,7 +5,13 @@
 # The following variables are defined:
 #
 #   PYGRAPHICS_FOUND
+#   PYGRAPHICS_PYTHON_PATH
+#   PYGRAPHICS_BINARY_PATH
 #
+# Commands:
+#
+#   pyrcc_cmd
+#   pyuic_cmd
 
 set(PYGRAPHICS_FOUND 1)
 set(PYGRAPHICS_PYTHON_PATH ${pygraphics_home}/lib/python${Python_config_version_twodigit}/site-packages
@@ -18,7 +24,10 @@ mark_as_advanced(PYGRAPHICS_FOUND PYGRAPHICS_PYTHON_PATH)
 find_package(PythonInterp QUIET REQUIRED)
 
 find_program(pyrcc_cmd pyrcc4)
+mark_as_advanced(pyrcc_cmd)
 set(pyuic_cmd ${PYTHON_EXECUTABLE} -m PyQt4.uic.pyuic)
+
+get_filename_component(PYGRAPHICS_BINARY_PATH ${pyrcc_cmd} PATH)
 
 # gen_pyqt_resource(target output_dir inputs ...)
 #

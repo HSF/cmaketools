@@ -7,6 +7,7 @@
 #  MYSQL_LIBRARY
 #  MYSQL_LIBRARIES (not cached)
 #  MYSQL_LIBRARY_DIRS (not cached)
+#  MYSQL_EXECUTABLE
 
 find_path(MYSQL_INCLUDE_DIR mysql.h)
 find_library(MYSQL_LIBRARY NAMES mysqlclient_r libmysql.lib)
