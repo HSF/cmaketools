@@ -1,3 +1,9 @@
+! 2014-06-12 - Marco Clemencic (9d95504)
+
+ - modified HEPToolsMacros to allow the use of CMakeTools (if it works)
+
+   
+
 ! 2014-06-10 - David Quarrie (53518ce)
 
  - fixed compilation flags for ATLAS

@@ -30,7 +30,7 @@ notes_file=$rootdir/doc/gaudi_cmake.notes
 
 echo "Clean destination directory"
 # we do not remove '.svn' directories (or directories either)
-find $rootdir -noleaf -depth -mindepth 1 -type f -not -wholename "*.svn" -not -wholename "*/.git*" -not -name $(basename $0) -not -name .project -not -name "*.cmake" -exec rm -rfv \{} \;
+find $rootdir -noleaf -depth -mindepth 1 -type f -not -wholename "*.svn" -not -wholename "*/.git*" -not -name $(basename $0) -not -name .project -not -name "*.cmake" -not -name "README*" -exec rm -rfv \{} \;
 
 echo "Importing the files from ${remote_id}"
 git clone --bare $git_root $rootdir/.gaudi_tmp
