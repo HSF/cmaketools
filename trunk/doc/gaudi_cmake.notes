@@ -1,3 +1,39 @@
+! 2014-06-26 - Marco Clemencic (98b8422)
+
+ - fixed dependency problem between generated headers and genreflex step
+
+   
+
+! 2014-06-19 - Marco Clemencic (3e1881e)
+
+ - minor reorganization of ATLAS-specific settings
+
+   
+
+! 2014-06-19 - Marco Clemencic (3e71ee9)
+
+ - consider athena_add_module to imply dependency on GaudiCoreSvc
+
+   
+
+! 2014-06-02 - Marco Clemencic (2139fdb)
+
+ - marked GENCONF_WITH_NO_INIT as advanced
+
+   
+
+! 2014-06-16 - David Quarrie (ea91557)
+
+ - extended the other projects search path to cover ATLAS nightlies
+
+   
+
+! 2014-06-12 - Marco Clemencic (4634280)
+
+ - fixed GAUDI-966: hide confusing files in the build directory
+
+   https://its.cern.ch/jira/browse/GAUDI-966
+
 ! 2014-06-12 - Marco Clemencic (9d95504)
 
  - modified HEPToolsMacros to allow the use of CMakeTools (if it works)
