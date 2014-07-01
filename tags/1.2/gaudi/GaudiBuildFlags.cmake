@@ -257,13 +257,6 @@ add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 #        and http://stackoverflow.com/a/20440238/504346
 add_definitions(-DBOOST_SPIRIT_USE_PHOENIX_V3)
 
-# FIXME: this macro is used in ATLAS to simplify the migration to Gaudi v25,
-#        unfortunately it's not possible to detect the version of Gaudi at this point
-#        so we assume that any CMake-based build in ATLAS uses Gaudi >= v25
-if(GAUDI_ATLAS)
-  add_definitions(-DHAVE_GAUDI_PLUGINSVC)
-endif()
-
 if((LCG_COMP STREQUAL gcc AND LCG_COMPVERS MATCHES "47|max") OR GAUDI_CPP11)
   set(GCCXML_CXX_FLAGS "${GCCXML_CXX_FLAGS} -D__STRICT_ANSI__")
 endif()
@@ -275,6 +268,11 @@ if(LCG_COMP STREQUAL gcc AND LCG_COMPVERS STREQUAL 43)
 endif()
 
 if(GAUDI_ATLAS)
+  # FIXME: this macro is used in ATLAS to simplify the migration to Gaudi v25,
+  #        unfortunately it's not possible to detect the version of Gaudi at this point
+  #        so we assume that any CMake-based build in ATLAS uses Gaudi >= v25
+  add_definitions(-DHAVE_GAUDI_PLUGINSVC)
+  
   add_definitions(-DATLAS_GAUDI_V21)
   include(AthenaBuildFlags OPTIONAL)
 endif()
