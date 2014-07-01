@@ -164,13 +164,17 @@ macro(reflex_generate_dictionary dictionary _headerfile _selectionfile)
     set(gccxmlopts "--gccxmlopt=${gccxmlopts}")
   endif()
 
+  # special phony target to allow extensions to the dependencies of the
+  # dictionary generation step
+  add_custom_target(${dictionary}GenDeps)
+
   get_filename_component(GCCXML_home ${GCCXML} PATH)
   add_custom_command(
     OUTPUT ${gensrcdict} ${rootmapname} ${gensrcclassdef}
     COMMAND ${ROOT_genreflex_CMD}
          ${headerfiles} -o ${gensrcdict} ${gccxmlopts} ${rootmapopts} --select=${selectionfile}
          --gccxmlpath=${GCCXML_home} ${ARG_OPTIONS} ${include_dirs} ${definitions}
-    DEPENDS ${headerfiles} ${selectionfile})
+    DEPENDS ${headerfiles} ${selectionfile} ${dictionary}GenDeps)
 
   # Creating this target at ALL level enables the possibility to generate dictionaries (genreflex step)
   # well before the dependent libraries of the dictionary are build
