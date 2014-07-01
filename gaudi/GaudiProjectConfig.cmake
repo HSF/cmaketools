@@ -3,7 +3,7 @@
 #
 # Authors: Pere Mato, Marco Clemencic
 #
-# Commit Id: 9d955046f2d71b5543e1df4a77cf319a3df3a2d1
+# Commit Id: 98b8422c2e5f35e5240a1a8f6a0916db8fd804df
 
 cmake_minimum_required(VERSION 2.8.5)
 
@@ -173,10 +173,17 @@ macro(gaudi_project project version)
         "Single build output directory for all libraries" FORCE)
   endif()
 
-  set(env_xml ${CMAKE_BINARY_DIR}/${project}BuildEnvironment.xml
+  if(NOT CMAKE_CONFIG_OUTPUT_DIRECTORY)
+    set(CMAKE_CONFIG_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/config CACHE STRING
+        "Single build output directory for all generated config files" FORCE)
+  endif()
+  # ensure the directory exists (this is not a standard CMake variable)
+  file(MAKE_DIRECTORY ${CMAKE_CONFIG_OUTPUT_DIRECTORY})
+
+  set(env_xml ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${project}BuildEnvironment.xml
       CACHE STRING "path to the XML file for the environment to be used in building and testing")
 
-  set(env_release_xml ${CMAKE_BINARY_DIR}/${project}Environment.xml
+  set(env_release_xml ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${project}Environment.xml
       CACHE STRING "path to the XML file for the environment to be used once the project is installed")
 
   mark_as_advanced(CMAKE_RUNTIME_OUTPUT_DIRECTORY CMAKE_LIBRARY_OUTPUT_DIRECTORY
@@ -611,8 +618,8 @@ __path__ = [d for d in [os.path.join(d, '${pypack}') for d in sys.path if d]
   gaudi_generate_exports(${packages})
 
   #--- Generate the manifest.xml file.
-  gaudi_generate_project_manifest(${CMAKE_BINARY_DIR}/manifest.xml ${ARGV})
-  install(FILES ${CMAKE_BINARY_DIR}/manifest.xml DESTINATION .)
+  gaudi_generate_project_manifest(${CMAKE_CONFIG_OUTPUT_DIRECTORY}/manifest.xml ${ARGV})
+  install(FILES ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/manifest.xml DESTINATION .)
 
   #--- CPack configuration
   set(CPACK_PACKAGE_NAME ${project})
@@ -676,6 +683,7 @@ macro(_gaudi_use_other_projects)
       set(suffixes)
       foreach(_s1 ${other_project}
                   ${other_project}/${other_project_version}
+                  ${other_project_upcase}/${other_project_version}
                   ${other_project_upcase}/${other_project_upcase}_${other_project_version}
                   ${other_project_upcase})
         foreach(_s2 "" "/InstallArea")
@@ -1054,7 +1062,7 @@ macro(gaudi_collect_subdir_deps)
       endforeach()
     endforeach()
     # Special dependency required for modules
-    string(REGEX MATCHALL "gaudi_add_module *\\(([^)]+)\\)" vars "${file_contents}")
+    string(REGEX MATCHALL "(gaudi|athena)_add_module *\\(([^)]+)\\)" vars "${file_contents}")
     if(vars AND NOT _p STREQUAL GaudiCoreSvc)
       list(APPEND ${_p}_DEPENDENCIES GaudiCoreSvc)
     endif()
@@ -1448,6 +1456,7 @@ function(gaudi_generate_configurables library)
     endif()
     set(GENCONF_WITH_NO_INIT "${GENCONF_WITH_NO_INIT}"
         CACHE BOOL "Whether the genconf command supports the options --no-init")
+    mark_as_advanced(GENCONF_WITH_NO_INIT)
     #message(STATUS "... ${GENCONF_WITH_NO_INIT}")
   else()
     if(GENCONF_WITH_NO_INIT)
@@ -1906,8 +1915,12 @@ function(gaudi_add_dictionary dictionary header selection)
   set_target_properties(${dictionary}Dict PROPERTIES COMPILE_FLAGS "-Wno-overloaded-virtual")
   _gaudi_detach_debinfo(${dictionary}Dict)
 
-  gaudi_add_genheader_dependencies(${dictionary}Gen)
-
+  if(TARGET ${dictionary}GenDeps)
+    gaudi_add_genheader_dependencies(${dictionary}GenDeps)
+  else()
+    gaudi_add_genheader_dependencies(${dictionary}Gen)
+  endif()
+  
   # Notify the project level target
   get_property(rootmapname TARGET ${dictionary}Gen PROPERTY ROOTMAPFILE)
   gaudi_merge_files_append(DictRootmap ${dictionary}Gen ${CMAKE_CURRENT_BINARY_DIR}/${rootmapname})
@@ -2350,8 +2363,7 @@ macro(gaudi_generate_project_config_version_file)
     endif()
   endforeach()
 
-  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/config)
-  file(WRITE ${CMAKE_BINARY_DIR}/config/${CMAKE_PROJECT_NAME}ConfigVersion.cmake
+  file(WRITE ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake
 "set(PACKAGE_NAME ${CMAKE_PROJECT_NAME})
 set(PACKAGE_VERSION ${vers_id})
 if(PACKAGE_NAME STREQUAL PACKAGE_FIND_NAME)
@@ -2370,7 +2382,7 @@ if(PACKAGE_NAME STREQUAL PACKAGE_FIND_NAME)
   endif()
 endif()
 ")
-  install(FILES ${CMAKE_BINARY_DIR}/config/${CMAKE_PROJECT_NAME}ConfigVersion.cmake DESTINATION .)
+  install(FILES ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${CMAKE_PROJECT_NAME}ConfigVersion.cmake DESTINATION .)
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -2380,8 +2392,7 @@ endmacro()
 #-------------------------------------------------------------------------------
 macro(gaudi_generate_project_config_file)
   message(STATUS "Generating ${CMAKE_PROJECT_NAME}Config.cmake")
-  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/config)
-  file(WRITE ${CMAKE_BINARY_DIR}/config/${CMAKE_PROJECT_NAME}Config.cmake
+  file(WRITE ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${CMAKE_PROJECT_NAME}Config.cmake
 "# File automatically generated: DO NOT EDIT.
 set(${CMAKE_PROJECT_NAME}_heptools_version ${heptools_version})
 set(${CMAKE_PROJECT_NAME}_heptools_system ${LCG_SYSTEM})
@@ -2398,7 +2409,7 @@ set(${CMAKE_PROJECT_NAME}_USES ${PROJECT_USE})
 list(INSERT CMAKE_MODULE_PATH 0 \${${CMAKE_PROJECT_NAME}_DIR}/cmake)
 include(${CMAKE_PROJECT_NAME}PlatformConfig)
 ")
-  install(FILES ${CMAKE_BINARY_DIR}/config/${CMAKE_PROJECT_NAME}Config.cmake DESTINATION .)
+  install(FILES ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${CMAKE_PROJECT_NAME}Config.cmake DESTINATION .)
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -2418,8 +2429,7 @@ macro(gaudi_generate_project_platform_config_file)
   _make_relocatable(project_environment_ VARS LCG_releases LCG_external)
   string(REPLACE "\$" "\\\$" project_environment_string "${project_environment_}")
 
-  file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/config)
-  set(filename ${CMAKE_BINARY_DIR}/config/${CMAKE_PROJECT_NAME}PlatformConfig.cmake)
+  set(filename ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${CMAKE_PROJECT_NAME}PlatformConfig.cmake)
   file(WRITE ${filename}
 "# File automatically generated: DO NOT EDIT.
 
@@ -2451,7 +2461,7 @@ endforeach()
 set(${CMAKE_PROJECT_NAME}_OVERRIDDEN_SUBDIRS ${override_subdirs})
 ")
 
-  install(FILES ${CMAKE_BINARY_DIR}/config/${CMAKE_PROJECT_NAME}PlatformConfig.cmake DESTINATION cmake)
+  install(FILES ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${CMAKE_PROJECT_NAME}PlatformConfig.cmake DESTINATION cmake)
 endmacro()
 
 #-------------------------------------------------------------------------------
@@ -2784,7 +2794,7 @@ macro(gaudi_generate_exports)
       set(pkg_exp_file ${pkgname}Export.cmake)
 
       #message(STATUS "Generating ${pkg_exp_file}")
-      set(pkg_exp_file ${CMAKE_CURRENT_BINARY_DIR}/${pkg_exp_file})
+      set(pkg_exp_file ${CMAKE_CONFIG_OUTPUT_DIRECTORY}/${pkg_exp_file})
 
       file(WRITE ${pkg_exp_file}
 "# File automatically generated: DO NOT EDIT.
