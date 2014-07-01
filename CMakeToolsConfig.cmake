@@ -11,5 +11,5 @@ if(NOT DEFINED CMakeTools_DIR)
 endif()
 
 macro(UseCMakeTools)
-  set(CMAKE_MODULE_PATH ${CMakeTools_DIR} ${GaudiProject_DIR}/modules ${CMAKE_MODULE_PATH})
+  set(CMAKE_MODULE_PATH ${CMakeTools_DIR} ${CMakeTools_DIR}/modules ${CMAKE_MODULE_PATH})
 endif()
