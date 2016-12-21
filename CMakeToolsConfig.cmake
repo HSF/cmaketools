@@ -12,4 +12,4 @@ endif()
 
 macro(UseCMakeTools)
   set(CMAKE_MODULE_PATH ${CMakeTools_DIR} ${CMakeTools_DIR}/modules ${CMAKE_MODULE_PATH})
-endif()
+endmacro()
