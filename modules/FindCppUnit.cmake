@@ -7,8 +7,8 @@
 #  CPPUNIT_LIBRARY
 #  CPPUNIT_LIBRARIES (not cached)
 
-find_path(CPPUNIT_INCLUDE_DIR cppunit/Test.h)
-find_library(CPPUNIT_LIBRARY NAMES cppunit)
+find_path(CPPUNIT_INCLUDE_DIR cppunit/Test.h HINT ${CPPUNITROOT}/include )
+find_library(CPPUNIT_LIBRARY NAMES cppunit HINT ${CPPUNITROOT}/lib )  
 
 set(CPPUNIT_INCLUDE_DIRS ${CPPUNIT_INCLUDE_DIR})
 
