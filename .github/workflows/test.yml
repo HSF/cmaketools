@@ -1,0 +1,29 @@
+name: linux
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        LCG: ["LCG_101/x86_64-centos7-gcc8-opt",
+              "LCG_99/x86_64-centos7-gcc8-opt"]
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+    - uses: cvmfs-contrib/github-action-cvmfs@v2
+    - uses: aidasoft/run-lcg-view@v3
+      with:
+        release-platform: ${{ matrix.LCG }}
+        run: |
+          export CMAKE_PREFIX_PATH=$PWD:$CMAKE_PREFIX_PATH;
+          cd test/Pythia8;
+          mkdir -p build install;
+          cd build;
+          cmake -DCMAKE_INSTALL_PREFIX=../install \
+                -DCMAKE_CXX_STANDARD=17 \
+                -DCMAKE_CXX_FLAGS=" -fdiagnostics-color=always" \
+                 -G Ninja ..;
+          ninja -k0
